@@ -1,5 +1,6 @@
 .idea
 .git
+.gitignore
 coverage.out
 shop.db.json
 bin
