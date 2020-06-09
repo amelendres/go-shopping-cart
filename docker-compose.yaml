@@ -1,0 +1,23 @@
+version: '3.6'
+
+services:
+    go:
+        container_name: appto-go-shopping-cart
+        image: appto-go
+        build:
+            context: .
+            dockerfile: Dockerfile
+        expose:
+            - '5000'
+        ports:
+            - "8080:5000"
+        restart: unless-stopped
+        networks:
+            - appto
+        volumes:
+            - .:/app:delegated
+
+networks:
+    appto:
+        #external: true
+        name: appto_net
