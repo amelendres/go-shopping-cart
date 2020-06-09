@@ -35,9 +35,9 @@ func TestGetProducts(t *testing.T) {
 
 	t.Run("it returns the products table as JSON", func(t *testing.T) {
 		wantedProducts := []Product{
-			{"Cleo", 32},
-			{"Chris", 20},
-			{"Tiest", 14},
+			{"Te", 32},
+			{"Bread", 20},
+			{"Coffee", 14},
 		}
 
 		store := StubCartStore{wantedProducts}
