@@ -1,4 +1,4 @@
-package shop
+package shopping
 
 import (
 	"os"

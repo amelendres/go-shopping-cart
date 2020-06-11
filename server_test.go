@@ -1,9 +1,12 @@
-package shop
+package shopping
 
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/google/uuid"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -12,45 +15,49 @@ import (
 
 func TestAddProduct(t *testing.T) {
 	store := StubCartStore{
-		[]Product{},
+		[]Cart{},
 	}
 	server := NewCartServer(&store)
 
 	t.Run("it add Product on POST", func(t *testing.T) {
-		product := Product{"Dr. Pepper", 2}
+		product := Product{"uuid", "Dr. Pepper", 0.5, 2}
 
-		request := newPostProductRequest(product)
+		request := newPostProductRequest(uuid.New().String(), product)
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusAccepted)
 		AssertProduct(t, &store, product)
 	})
-
-	//Add same product increment qty
-	//Add different products
 }
 
 func TestGetProducts(t *testing.T) {
 
-	t.Run("it returns the products table as JSON", func(t *testing.T) {
-		wantedProducts := []Product{
-			{"Te", 32},
-			{"Bread", 20},
-			{"Coffee", 14},
+	t.Run("it returns the Products table as JSON", func(t *testing.T) {
+		cartID := uuid.New().String()
+		wantedCarts := []Cart{
+			{
+				"cartId",
+				"buyerId",
+				[]Product{
+					{"uuid1", "Te", 1, 32},
+					{"uuid2", "Bread", 0.3, 20},
+					{"uuid3", "Coffee", 1, 14},
+				},
+			},
 		}
 
-		store := StubCartStore{wantedProducts}
+		store := StubCartStore{wantedCarts}
 		server := NewCartServer(&store)
 
-		request := newGetProductsRequest()
+		request := newGetProductsRequest(cartID)
 		response := httptest.NewRecorder()
 		server.ServeHTTP(response, request)
 
 		got := getProductsFromResponse(t, response.Body)
 
 		assertStatus(t, response.Code, http.StatusOK)
-		assertProducts(t, got, wantedProducts)
+		assertProducts(t, got, wantedCarts[0].Products)
 		assertContentType(t, response, jsonContentType)
 
 	})
@@ -88,20 +95,16 @@ func assertStatus(t *testing.T, got, want int) {
 	}
 }
 
-func newGetProductsRequest() *http.Request {
-	req, _ := http.NewRequest(http.MethodGet, "/products", nil)
+func newGetProductsRequest(cartID string) *http.Request {
+	req, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/carts/%s/products", cartID), nil)
 	return req
 }
 
-func newPostProductRequest(product Product) *http.Request {
-	body, _ := json.Marshal(product)
-	req, _ := http.NewRequest(http.MethodPost,"/products", bytes.NewBuffer(body))
-	return req
-}
-
-func assertResponseBody(t *testing.T, got, want string) {
-	t.Helper()
-	if got != want {
-		t.Errorf("response body is wrong, got %q want %q", got, want)
+func newPostProductRequest(cartID string, product Product) *http.Request {
+	body, err := json.Marshal(product)
+	if err != nil {
+		log.Fatalln(err)
 	}
+	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/carts/%s/products", cartID), bytes.NewBuffer(body))
+	return req
 }

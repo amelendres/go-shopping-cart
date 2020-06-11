@@ -1,4 +1,4 @@
-package shop
+package shopping
 
 import (
 	"encoding/json"
@@ -6,25 +6,29 @@ import (
 	"io"
 )
 
-// Products stores a collection of products
+// Products stores a collection of Products
 type Products []Product
 
-func (p Products) Find(name string) *Product {
+func (p Products) Find(product Product) (int, *Product) {
 	for i, pro := range p {
-		if pro.Name == name {
-			return &p[i]
+		if pro.Equal(product) {
+			return i, &p[i]
 		}
 	}
-	return nil
+	return 0, nil
 }
 
-// NewProducts creates a products from JSON
+func (p Products) set(key int, product Product) {
+	p[key] = product
+}
+
+// NewProducts creates a Products from JSON
 func NewProducts(rdr io.Reader) ([]Product, error) {
 	var products []Product
 	err := json.NewDecoder(rdr).Decode(&products)
 
 	if err != nil {
-		err = fmt.Errorf("problem parsing products, %v", err)
+		err = fmt.Errorf("problem parsing Products, %v", err)
 	}
 
 	return products, err

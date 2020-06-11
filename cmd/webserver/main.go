@@ -7,17 +7,18 @@ import (
 	shop "github.com/amelendres/go-shopping-cart"
 )
 
-const dbFileName = "shop.db.json"
+const dbFileName = "cart.db.json"
 
 func main() {
-	store, close, err := shop.FileSystemCartStoreFromFile(dbFileName)
+	//store, close, err := shop.FileSystemCartStoreFromFile(dbFileName)
+	repository, close, err := shop.FileSystemCartStoreFromFile(dbFileName)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer close()
 
-	server := shop.NewCartServer(store)
+	server := shop.NewCartServer(repository)
 
 	if err := http.ListenAndServe(":5000", server); err != nil {
 		log.Fatalf("could not listen on port 5000 %v", err)
