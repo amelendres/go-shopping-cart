@@ -2,5 +2,5 @@
 .git
 .gitignore
 coverage.out
-shop.db.json
+cart.db.json
 bin
