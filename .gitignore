@@ -1,5 +1,5 @@
 .idea
 .git
 coverage.out
-shop.db.json
+cart.db.json
 bin

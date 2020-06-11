@@ -1,19 +1,18 @@
-package shop
+package shopping
 
 import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sort"
 )
 
-// FileSystemCartStore stores carts filesystem
-type FileSystemCartStore struct {
+// FileSystemCartRepository stores carts filesystem
+type FileSystemCartRepository struct {
 	database *json.Encoder
-	products Products
+	carts    []Cart
 }
 
-func NewFileSystemCartStore(file *os.File) (*FileSystemCartStore, error) {
+func NewFileSystemCartStore(file *os.File) (*FileSystemCartRepository, error) {
 
 	err := initialiseCartDBFile(file)
 
@@ -21,20 +20,20 @@ func NewFileSystemCartStore(file *os.File) (*FileSystemCartStore, error) {
 		return nil, fmt.Errorf("problem initialising cart db file, %v", err)
 	}
 
-	products, err := NewProducts(file)
+	carts, err := NewCartsFromJSON(file)
 
 	if err != nil {
-		return nil, fmt.Errorf("problem loading cart store from file %s, %v", file.Name(), err)
+		return nil, fmt.Errorf("problem loading carts from file %s, %v", file.Name(), err)
 	}
 
-	return &FileSystemCartStore{
+	return &FileSystemCartRepository{
 		database: json.NewEncoder(&tape{file}),
-		products: products,
+		carts:    carts,
 	}, nil
 }
 
 // FileSystemCartStoreFromFile creates a CartStore from the contents of a JSON file found at path
-func FileSystemCartStoreFromFile(path string) (*FileSystemCartStore, func(), error) {
+func FileSystemCartStoreFromFile(path string) (*FileSystemCartRepository, func(), error) {
 	db, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0666)
 
 	if err != nil {
@@ -71,21 +70,33 @@ func initialiseCartDBFile(file *os.File) error {
 	return nil
 }
 
-func (f *FileSystemCartStore) GetProducts() Products {
-	sort.Slice(f.products, func(i, j int) bool {
-		return f.products[i].Qty > f.products[j].Qty
-	})
-	return f.products
-}
-
-func (f *FileSystemCartStore) AddProduct(product Product) {
-	prod := f.products.Find(product.Name)
-
-	if prod != nil {
-		prod.Qty++
-	} else {
-		f.products = append(f.products, product)
+func (f *FileSystemCartRepository) Get(id string) (*Cart, error) {
+	_, cart := f.find(id)
+	if cart == nil {
+		return nil, ErrUnknownCart
 	}
 
-	f.database.Encode(f.products)
+	return cart, nil
+}
+
+func (f *FileSystemCartRepository) Save(cart *Cart) error {
+	_, crt := f.find(string(cart.ID))
+
+	if crt != nil {
+		crt = cart
+	} else {
+		f.carts = append(f.carts, *cart)
+	}
+
+	err := f.database.Encode(f.carts)
+	return err
+}
+
+func (f *FileSystemCartRepository) find(id string) (int, *Cart) {
+	for i, cart := range f.carts {
+		if string(cart.ID) == id {
+			return i, &f.carts[i]
+		}
+	}
+	return 0, nil
 }

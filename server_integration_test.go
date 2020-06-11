@@ -1,7 +1,7 @@
-package shop
+package shopping
 
 import (
-	"fmt"
+	"github.com/google/uuid"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,21 +15,21 @@ func TestAddingProductsAndRetrievingThem(t *testing.T) {
 	assertNoError(t, err)
 
 	server := NewCartServer(store)
-	product := Product{"Pepsi", 1}
+	product := Product{"uuid", "Pepsi", 0.7,  1}
+	cartID := uuid.New().String()
 
-	server.ServeHTTP(httptest.NewRecorder(), newPostProductRequest(product))
-	server.ServeHTTP(httptest.NewRecorder(), newPostProductRequest(product))
-	server.ServeHTTP(httptest.NewRecorder(), newPostProductRequest(product))
+	server.ServeHTTP(httptest.NewRecorder(), newPostProductRequest(cartID, product))
+	server.ServeHTTP(httptest.NewRecorder(), newPostProductRequest(cartID, product))
+	server.ServeHTTP(httptest.NewRecorder(), newPostProductRequest(cartID, product))
 
-	t.Run("get products", func(t *testing.T) {
+	t.Run("get Products", func(t *testing.T) {
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, newGetProductsRequest())
+		server.ServeHTTP(response, newGetProductsRequest(cartID))
 		assertStatus(t, response.Code, http.StatusOK)
 
 		got := getProductsFromResponse(t, response.Body)
-		fmt.Printf("%+v\n", got)
 		want := []Product{
-			{product.Name, 3},
+			{"uuid", "Pepsi", 0.7,  3},
 		}
 		assertProducts(t, got, want)
 	})
