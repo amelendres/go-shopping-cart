@@ -1,9 +1,10 @@
-package shopping
+package server
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/amelendres/go-shopping-cart"
 	"github.com/google/uuid"
 	"io"
 	"log"
@@ -14,20 +15,20 @@ import (
 )
 
 func TestAddProduct(t *testing.T) {
-	store := StubCartStore{
-		[]Cart{},
+	store := shopping.StubCartStore{
+		[]shopping.Cart{},
 	}
-	server := NewCartServer(&store)
+	cs := NewCartServer(&store)
 
 	t.Run("it add Product on POST", func(t *testing.T) {
-		product := Product{"uuid", "Dr. Pepper", 0.5, 2}
+		product := shopping.Product{"uuid", "Dr. Pepper", 0.5, 2}
 
 		request := newPostProductRequest(uuid.New().String(), product)
 		response := httptest.NewRecorder()
-		server.ServeHTTP(response, request)
+		cs.ServeHTTP(response, request)
 
 		assertStatus(t, response.Code, http.StatusAccepted)
-		AssertProduct(t, &store, product)
+		shopping.AssertProduct(t, &store, product)
 	})
 }
 
@@ -35,11 +36,11 @@ func TestGetProducts(t *testing.T) {
 
 	t.Run("it returns the Products table as JSON", func(t *testing.T) {
 		cartID := uuid.New().String()
-		wantedCarts := []Cart{
+		wantedCarts := []shopping.Cart{
 			{
 				"cartId",
 				"buyerId",
-				[]Product{
+				[]shopping.Product{
 					{"uuid1", "Te", 1, 32},
 					{"uuid2", "Bread", 0.3, 20},
 					{"uuid3", "Coffee", 1, 14},
@@ -47,7 +48,7 @@ func TestGetProducts(t *testing.T) {
 			},
 		}
 
-		store := StubCartStore{wantedCarts}
+		store := shopping.StubCartStore{wantedCarts}
 		server := NewCartServer(&store)
 
 		request := newGetProductsRequest(cartID)
@@ -70,9 +71,9 @@ func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want s
 	}
 }
 
-func getProductsFromResponse(t *testing.T, body io.Reader) []Product {
+func getProductsFromResponse(t *testing.T, body io.Reader) []shopping.Product {
 	t.Helper()
-	products, err := NewProducts(body)
+	products, err := shopping.NewProducts(body)
 
 	if err != nil {
 		t.Fatalf("Unable to parse response from server %q into slice of Product, '%v'", body, err)
@@ -81,7 +82,7 @@ func getProductsFromResponse(t *testing.T, body io.Reader) []Product {
 	return products
 }
 
-func assertProducts(t *testing.T, got, want []Product) {
+func assertProducts(t *testing.T, got, want []shopping.Product) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v want %v", got, want)
@@ -100,7 +101,7 @@ func newGetProductsRequest(cartID string) *http.Request {
 	return req
 }
 
-func newPostProductRequest(cartID string, product Product) *http.Request {
+func newPostProductRequest(cartID string, product shopping.Product) *http.Request {
 	body, err := json.Marshal(product)
 	if err != nil {
 		log.Fatalln(err)

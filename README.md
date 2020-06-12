@@ -20,7 +20,7 @@ make build
 
 ### HOW TO RUN 
 
-####ENDPOINTS
+**ENDPOINTS**
 
 * Add a product to Cart
 ```curl --location --request POST 'http://localhost:8050/carts/c50bf7b3-95d5-48fa-8b0d-691e3f40c1f9/products' \
