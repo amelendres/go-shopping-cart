@@ -21,7 +21,7 @@ func (c *Cart) AddProduct(product Product) {
 	key, prod := c.Products.Find(product)
 
 	if prod != nil {
-		c.Products.set(key, NewProduct(prod.ID, prod.Name, prod.Price, prod.Units+product.Units))
+		c.Products[key] = NewProduct(prod.ID, prod.Name, prod.Price, prod.Units+product.Units)
 	} else {
 		c.Products = append(c.Products, product)
 	}
