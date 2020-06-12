@@ -37,6 +37,12 @@ func TestAddingProductsAndRetrievingThem(t *testing.T) {
 		}
 		assertProducts(t, got, want)
 	})
+
+	t.Run("get Products Bad Request", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		cs.ServeHTTP(response, newGetProductsRequest(uuid.New().String()))
+		assertStatus(t, response.Code, http.StatusBadRequest)
+	})
 }
 
 func createTempFile(t *testing.T, initialData string) (*os.File, func()){

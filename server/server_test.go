@@ -34,7 +34,7 @@ func TestAddProduct(t *testing.T) {
 
 func TestGetProducts(t *testing.T) {
 
-	t.Run("it returns the Products table as JSON", func(t *testing.T) {
+	t.Run("it returns the Products as JSON", func(t *testing.T) {
 		cartID := uuid.New().String()
 		wantedCarts := []shopping.Cart{
 			{
@@ -73,7 +73,7 @@ func assertContentType(t *testing.T, response *httptest.ResponseRecorder, want s
 
 func getProductsFromResponse(t *testing.T, body io.Reader) []shopping.Product {
 	t.Helper()
-	products, err := shopping.NewProducts(body)
+	products, err := newProductsFromJSON(body)
 
 	if err != nil {
 		t.Fatalf("Unable to parse response from server %q into slice of Product, '%v'", body, err)
@@ -108,4 +108,15 @@ func newPostProductRequest(cartID string, product shopping.Product) *http.Reques
 	}
 	req, _ := http.NewRequest(http.MethodPost, fmt.Sprintf("/carts/%s/products", cartID), bytes.NewBuffer(body))
 	return req
+}
+
+func newProductsFromJSON(rdr io.Reader) ([]shopping.Product, error) {
+	var products []shopping.Product
+	err := json.NewDecoder(rdr).Decode(&products)
+
+	if err != nil {
+		err = fmt.Errorf("problem parsing Products, %v", err)
+	}
+
+	return products, err
 }
