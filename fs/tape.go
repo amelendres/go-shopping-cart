@@ -1,4 +1,4 @@
-package shopping
+package fs
 
 import (
 	"os"

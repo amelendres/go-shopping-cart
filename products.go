@@ -18,10 +18,6 @@ func (p Products) Find(product Product) (int, *Product) {
 	return 0, nil
 }
 
-func (p Products) set(key int, product Product) {
-	p[key] = product
-}
-
 // NewProducts creates a Products from JSON
 func NewProducts(rdr io.Reader) ([]Product, error) {
 	var products []Product
