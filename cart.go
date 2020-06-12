@@ -1,11 +1,5 @@
 package shopping
 
-import (
-	"encoding/json"
-	"fmt"
-	"io"
-)
-
 type UUID string
 
 type Cart struct {
@@ -31,13 +25,3 @@ func (c *Cart) GetProducts() Products {
 	return c.Products
 }
 
-func NewCartsFromJSON(rdr io.Reader) ([]Cart, error) {
-	var carts []Cart
-	err := json.NewDecoder(rdr).Decode(&carts)
-
-	if err != nil {
-		err = fmt.Errorf("problem parsing carts, %v", err)
-	}
-
-	return carts, err
-}

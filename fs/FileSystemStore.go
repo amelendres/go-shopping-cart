@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/amelendres/go-shopping-cart"
+	"io"
 	"os"
 )
 
@@ -21,7 +22,7 @@ func NewFileSystemCartStore(file *os.File) (*FileSystemCartRepository, error) {
 		return nil, fmt.Errorf("problem initialising cart db file, %v", err)
 	}
 
-	carts, err := shopping.NewCartsFromJSON(file)
+	carts, err := newCartsFromJSON(file)
 
 	if err != nil {
 		return nil, fmt.Errorf("problem loading carts from file %s, %v", file.Name(), err)
@@ -100,4 +101,15 @@ func (f *FileSystemCartRepository) find(id string) (int, *shopping.Cart) {
 		}
 	}
 	return 0, nil
+}
+
+func newCartsFromJSON(rdr io.Reader) ([]shopping.Cart, error) {
+	var carts []shopping.Cart
+	err := json.NewDecoder(rdr).Decode(&carts)
+
+	if err != nil {
+		err = fmt.Errorf("problem parsing carts, %v", err)
+	}
+
+	return carts, err
 }
