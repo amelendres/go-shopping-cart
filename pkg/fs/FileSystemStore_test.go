@@ -1,7 +1,7 @@
 package fs
 
 import (
-	"github.com/amelendres/go-shopping-cart"
+	shopping "github.com/amelendres/go-shopping-cart/pkg"
 	"io/ioutil"
 	"os"
 	"testing"

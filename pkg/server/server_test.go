@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/amelendres/go-shopping-cart"
+	shopping "github.com/amelendres/go-shopping-cart/pkg"
 	"github.com/google/uuid"
 	"io"
 	"log"

@@ -1,6 +1,6 @@
 .idea
 .git
 .gitignore
-coverage.out
+.DS_Store
+.build
 cart.db.json
-bin

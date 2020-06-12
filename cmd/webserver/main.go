@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/amelendres/go-shopping-cart/fs"
-	"github.com/amelendres/go-shopping-cart/server"
+	"github.com/amelendres/go-shopping-cart/pkg/fs"
+	"github.com/amelendres/go-shopping-cart/pkg/server"
 	"log"
 	"net/http"
 )

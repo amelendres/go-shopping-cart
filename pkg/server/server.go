@@ -2,7 +2,7 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/amelendres/go-shopping-cart"
+	shopping "github.com/amelendres/go-shopping-cart/pkg"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"net/http"

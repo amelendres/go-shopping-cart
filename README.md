@@ -11,9 +11,7 @@ git clone https://github.com/amelendres/go-shopping-cart
 ```
 
 
-Build
-
-The first installation 
+Build container
 ```
 make build
 ```
