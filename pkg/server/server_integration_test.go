@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/amelendres/go-shopping-cart"
-	"github.com/amelendres/go-shopping-cart/fs"
+	shopping "github.com/amelendres/go-shopping-cart/pkg"
+	"github.com/amelendres/go-shopping-cart/pkg/fs"
 	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"

@@ -1,5 +1,5 @@
 .idea
 .git
-coverage.out
+.DS_Store
+.build
 cart.db.json
-bin

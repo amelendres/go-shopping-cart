@@ -3,7 +3,7 @@ package fs
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/amelendres/go-shopping-cart"
+	shopping "github.com/amelendres/go-shopping-cart/pkg"
 	"io"
 	"os"
 )
