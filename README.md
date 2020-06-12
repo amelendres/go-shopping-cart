@@ -21,7 +21,8 @@ make build
 **ENDPOINTS**
 
 * Add a product to Cart
-```curl --location --request POST 'http://localhost:8050/carts/c50bf7b3-95d5-48fa-8b0d-691e3f40c1f9/products' \
+```
+curl --location --request POST 'http://localhost:8050/carts/c50bf7b3-95d5-48fa-8b0d-691e3f40c1f9/products' \
 --header 'Content-Type: application/json' \
 --data-raw '{
   "id": "4e45b227-6a79-44ee-8cf0-da21508a4f8a",
