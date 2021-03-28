@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/amelendres/go-shopping-cart/pkg/fs"
-	"github.com/amelendres/go-shopping-cart/pkg/server"
+	server "github.com/amelendres/go-shopping-cart/pkg/server/http"
+	"github.com/amelendres/go-shopping-cart/pkg/storage/fs"
 	"log"
 	"net/http"
 )
@@ -10,7 +10,7 @@ import (
 const dbFileName = "cart.db.json"
 
 func main() {
-	repository, close, err := fs.FileSystemCartStoreFromFile(dbFileName)
+	repository, close, err := fs.CartStoreFromFile(dbFileName)
 
 	if err != nil {
 		log.Fatal(err)

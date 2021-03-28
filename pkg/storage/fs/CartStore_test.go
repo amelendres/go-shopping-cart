@@ -1,7 +1,7 @@
 package fs
 
 import (
-	shopping "github.com/amelendres/go-shopping-cart/pkg"
+	cart "github.com/amelendres/go-shopping-cart/pkg"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -31,8 +31,8 @@ func TestFileSystemStore(t *testing.T) {
 		database, cleanDatabase := CreateTempFile(t, "")
 		defer cleanDatabase()
 
-		_, err := NewFileSystemCartStore(database)
+		_, err := NewCartStore(database)
 
-		shopping.AssertNoError(t, err)
+		cart.AssertNoError(t, err)
 	})
 }

@@ -1,8 +1,8 @@
-package server
+package http
 
 import (
-	shopping "github.com/amelendres/go-shopping-cart/pkg"
-	"github.com/amelendres/go-shopping-cart/pkg/fs"
+	cart "github.com/amelendres/go-shopping-cart/pkg"
+	"github.com/amelendres/go-shopping-cart/pkg/storage/fs"
 	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
@@ -14,12 +14,12 @@ import (
 func TestAddingProductsAndRetrievingThem(t *testing.T) {
 	database, cleanDatabase := createTempFile(t, `[]`)
 	defer cleanDatabase()
-	store, err := fs.NewFileSystemCartStore(database)
+	store, err := fs.NewCartStore(database)
 
-	shopping.AssertNoError(t, err)
+	cart.AssertNoError(t, err)
 
 	cs := NewCartServer(store)
-	product := shopping.Product{"uuid", "Pepsi", 0.7,  1}
+	product := cart.Product{"uuid", "Pepsi", 0.7,  1}
 	cartID := uuid.New().String()
 
 	cs.ServeHTTP(httptest.NewRecorder(), newPostProductRequest(cartID, product))
@@ -32,7 +32,7 @@ func TestAddingProductsAndRetrievingThem(t *testing.T) {
 		assertStatus(t, response.Code, http.StatusOK)
 
 		got := getProductsFromResponse(t, response.Body)
-		want := []shopping.Product{
+		want := []cart.Product{
 			{"uuid", "Pepsi", 0.7,  3},
 		}
 		assertProducts(t, got, want)
