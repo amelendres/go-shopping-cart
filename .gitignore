@@ -2,5 +2,7 @@
 .git
 .DS_Store
 .build
-cart.db.json
 proto/*.pb.go
+cart.db.json
+*test.db.json
+

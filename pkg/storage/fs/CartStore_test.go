@@ -28,10 +28,10 @@ func CreateTempFile(t *testing.T, initialData string) (*os.File, func()){
 func TestFileSystemStore(t *testing.T) {
 
 	t.Run("works with an empty file", func(t *testing.T) {
-		database, cleanDatabase := CreateTempFile(t, "")
-		defer cleanDatabase()
+		db, cleanDB := CreateTempFile(t, "")
+		defer cleanDB()
 
-		_, err := NewCartStore(database)
+		_, err := NewCartStore(db)
 
 		cart.AssertNoError(t, err)
 	})

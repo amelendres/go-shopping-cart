@@ -16,22 +16,22 @@ type CartRepository struct {
 	carts    []cart.Cart
 }
 
-func NewCartStore(file *os.File) (cart.Repository, error) {
+func NewCartStore(f *os.File) (cart.Repository, error) {
 
-	err := initialiseCartDBFile(file)
+	err := initDBFile(f)
 
 	if err != nil {
 		return nil, fmt.Errorf("problem initialising cart db file, %v", err)
 	}
 
-	carts, err := newCartsFromJSON(file)
+	carts, err := newCartsFromJSON(f)
 
 	if err != nil {
-		return nil, fmt.Errorf("problem loading carts from file %s, %v", file.Name(), err)
+		return nil, fmt.Errorf("problem loading carts from file %s, %v", f.Name(), err)
 	}
 
 	return &CartRepository{
-		database: json.NewEncoder(&tape{file}),
+		database: json.NewEncoder(&tape{f}),
 		carts:    carts,
 	}, nil
 }
@@ -49,7 +49,6 @@ func CartStoreFromFile(path string) (cart.Repository, func(), error) {
 	}
 
 	store, err := NewCartStore(db)
-
 	if err != nil {
 		return nil, nil, fmt.Errorf("problem creating file system cart store, %v ", err)
 	}
@@ -57,25 +56,25 @@ func CartStoreFromFile(path string) (cart.Repository, func(), error) {
 	return store, closeFunc, nil
 }
 
-func initialiseCartDBFile(file *os.File) error {
-	file.Seek(0, 0)
+func initDBFile(f *os.File) error {
+	f.Seek(0, 0)
 
-	info, err := file.Stat()
+	info, err := f.Stat()
 
 	if err != nil {
-		return fmt.Errorf("problem getting file info from file %s, %v", file.Name(), err)
+		return fmt.Errorf("problem getting file info from file %s, %v", f.Name(), err)
 	}
 
 	if info.Size() == 0 {
-		file.Write([]byte("[]"))
-		file.Seek(0, 0)
+		f.Write([]byte("[]"))
+		f.Seek(0, 0)
 	}
 
 	return nil
 }
 
-func (f *CartRepository) Get(id string) (*cart.Cart, error) {
-	c, err := f.find(id)
+func (f *CartRepository) Get(ID string) (*cart.Cart, error) {
+	c, err := f.find(ID)
 	if err != nil {
 		return nil, err
 	}
@@ -83,24 +82,24 @@ func (f *CartRepository) Get(id string) (*cart.Cart, error) {
 	return c, nil
 }
 
-func (f *CartRepository) Save(cart cart.Cart) error {
-	c, err := f.find(string(cart.ID))
+func (f *CartRepository) Save(c cart.Cart) error {
+	curr, err := f.find(string(c.ID))
 	if err != nil {
-		f.carts = append(f.carts, cart)
+		f.carts = append(f.carts, c)
 		return nil
 	}
 
-	*c = cart
+	*curr = c
 	return f.database.Encode(f.carts)
 }
 
-func (f *CartRepository) find(id string) (*cart.Cart, error) {
+func (f *CartRepository) find(ID string) (*cart.Cart, error) {
 	for i, c := range f.carts {
-		if string(c.ID) == id {
+		if string(c.ID) == ID {
 			return &f.carts[i], nil
 		}
 	}
-	return nil, errors.New(fmt.Sprintf("Cart <%s> not found", id))
+	return nil, errors.New(fmt.Sprintf("Cart <%s> not found", ID))
 }
 
 func newCartsFromJSON(rdr io.Reader) ([]cart.Cart, error) {

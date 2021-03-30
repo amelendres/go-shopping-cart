@@ -15,46 +15,46 @@ func NewStubCartStore() Repository {
 }
 
 
-func (s *StubCartStore) Save(cart Cart) error {
-	s.Carts = append(s.Carts, cart)
+func (s *StubCartStore) Save(c Cart) error {
+	s.Carts = append(s.Carts, c)
 	return nil
 }
 
-func (s *StubCartStore) Get(id string) (*Cart, error) {
+func (s *StubCartStore) Get(ID string) (*Cart, error) {
 	if len(s.Carts) < 1 {
-		return nil, ErrCartNotFound(id)
+		return nil, ErrCartNotFound(ID)
 	}
 	return &s.Carts[0], nil
 }
 
-func AssertCartProduct(t *testing.T, cart *Cart, product Product) {
+func AssertCartProduct(t *testing.T, c *Cart, p Product) {
 	t.Helper()
 
-	if len(cart.Products) != 1 {
-		t.Fatalf("got %d calls to AddProduct want %d", len(cart.Products), 1)
+	if len(c.Products) != 1 {
+		t.Fatalf("got %d calls to AddProduct want %d", len(c.Products), 1)
 	}
 
-	if cart.Products[0] != product {
-		t.Errorf("did not cart the correct product got %+v want %+v", cart.Products[0], product)
+	if c.Products[0] != p {
+		t.Errorf("did not cart the correct product got %+v want %+v", c.Products[0], p)
 	}
 }
 
-func AssertCartProductQty(t *testing.T, cart *Cart, productId string, qty Quantity) {
+func AssertCartProductQty(t *testing.T, c *Cart, productID string, qty Quantity) {
 	t.Helper()
 
-	prod, err := cart.GetProduct(productId)
+	p, err := c.GetProduct(productID)
 	if err != nil {
-		t.Fatalf("Product <%s> Not Found", productId)
+		t.Fatalf("Product <%s> Not Found", productID)
 	}
 
-	if prod.Units != qty {
-		t.Errorf("did not cart the correct product Units, got %d want %d", prod.Units, qty)
+	if p.Units != qty {
+		t.Errorf("did not cart the correct product Units, got %d want %d", p.Units, qty)
 	}
 }
 
-func AssertCartProductLines(t *testing.T, cart *Cart, qty int) {
+func AssertCartProductLines(t *testing.T, c *Cart, qty int) {
 	t.Helper()
-	lines := len(cart.Products)
+	lines := len(c.Products)
 	if lines != qty{
 		t.Errorf("did not cart the correct product lines, got %q want %q", lines, qty)
 	}
