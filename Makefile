@@ -11,9 +11,24 @@ start: ## run cart server
 
 test: ## run tests
 	@go test ./...
+	#go test ./pkg -run TestCartAddProduct -v
+	#go test ./pkg/server  -v
 
 coverage:
 	mkdir -p .build/test_results
 	@go test -coverprofile=.build/test_results/coverage.out ./...
 	@go tool cover -func=.build/test_results/coverage.out
+
+
+PROTO_PATH=proto
+PATH_TYPE=source_relative
+PROTO_OUT=.
+#
+gproto: ##generate pb
+	protoc --go_out=$(PROTO_OUT) --go_opt=paths=$(PATH_TYPE) \
+        --go-grpc_out=require_unimplemented_servers=false:$(PROTO_OUT) --go-grpc_opt=paths=$(PATH_TYPE) \
+        $(PROTO_PATH)/cart.proto
+
+cproto: ##clean pb
+	rm -f $(PROTO_PATH)/*.pb.go
 
