@@ -1,14 +1,17 @@
-FROM golang:1.14.4-alpine3.12
-
+FROM golang:1.15.4-alpine3.12
 ENV APP_NAME cart
-ENV PORT 5000
+#ENV PORT 5000
 
 WORKDIR /go/src/${APP_NAME}
+
+RUN apk add --no-cache protoc make
+
 COPY . .
 
 RUN go get -d -v ./...
 RUN go install -v ./...
 
-CMD ["webserver"]
+#CMD ["webserver"]
+CMD ["grpc"]
 
-EXPOSE ${PORT}
+EXPOSE ${SERVER_PORT}
