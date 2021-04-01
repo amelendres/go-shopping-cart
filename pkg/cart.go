@@ -51,3 +51,9 @@ func (c *Cart) IncProductQty(productID string, qty int) error {
 	}
 	return ErrProductNotFound(productID)
 }
+
+//Value Objects
+func (u *UUID) String() string{
+	return string(*u)
+}
+

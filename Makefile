@@ -22,15 +22,15 @@ test: ## run tests
 	#go test ./pkg/server  -v
 
 coverage:
-	mkdir -p .build/test_results
-	@go test -coverprofile=.build/test_results/coverage.out ./...
-	@go tool cover -func=.build/test_results/coverage.out
+	mkdir -p var/test_results
+	@go test -coverprofile=var/test_results/coverage.out ./...
+	@go tool cover -func=var/test_results/coverage.out
 
 
 
 ##gRPC
 gplugins: ##grpc plugins
-	@go get google.golang.org/protobuf/cmd/protoc-gen-go && \
+	@go get google.golang.org/protobuf/cmd/protoc-gen-go \
 	@go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 

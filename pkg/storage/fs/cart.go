@@ -36,6 +36,26 @@ func NewCartStore(f *os.File) (cart.Repository, error) {
 	}, nil
 }
 
+func (f *CartRepository) Get(ID string) (*cart.Cart, error) {
+	c, err := f.find(ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func (f *CartRepository) Save(c cart.Cart) error {
+	curr, err := f.find(string(c.ID))
+	if err != nil {
+		f.carts = append(f.carts, c)
+		return nil
+	}
+
+	*curr = c
+	return f.database.Encode(f.carts)
+}
+
 // CartStoreFromFile creates a CartStore from the contents of a JSON file found at path
 func CartStoreFromFile(path string) (cart.Repository, func(), error) {
 	db, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0666)
@@ -71,26 +91,6 @@ func initDBFile(f *os.File) error {
 	}
 
 	return nil
-}
-
-func (f *CartRepository) Get(ID string) (*cart.Cart, error) {
-	c, err := f.find(ID)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
-}
-
-func (f *CartRepository) Save(c cart.Cart) error {
-	curr, err := f.find(string(c.ID))
-	if err != nil {
-		f.carts = append(f.carts, c)
-		return nil
-	}
-
-	*curr = c
-	return f.database.Encode(f.carts)
 }
 
 func (f *CartRepository) find(ID string) (*cart.Cart, error) {

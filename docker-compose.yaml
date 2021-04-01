@@ -35,7 +35,8 @@ services:
             POSTGRES_DB: ${POSTGRES_DB}
             PGDATA: /var/lib/postgresql/data/pgdata
         volumes:
-            - ./var/data/postgres/pgdata:/var/lib/postgresql/data/pgdata
+            - ./var:/var/lib/postgresql
+            - ./local/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 networks:
     appto:

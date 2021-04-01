@@ -4,6 +4,6 @@
 .build
 proto/*.pb.go
 *.db.json
-var
+var/*
 
 

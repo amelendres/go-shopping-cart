@@ -7,6 +7,7 @@ import (
 	"github.com/amelendres/go-shopping-cart/pkg/creating"
 	"github.com/amelendres/go-shopping-cart/pkg/listing"
 	"github.com/amelendres/go-shopping-cart/pkg/storage/fs"
+	"github.com/amelendres/go-shopping-cart/pkg/storage/pgsql"
 	"github.com/google/uuid"
 	"io/ioutil"
 	"log"
@@ -18,11 +19,21 @@ import (
 	cartgrpc "github.com/amelendres/go-shopping-cart/proto"
 )
 
+type dbType int
+
+const (
+	TMP dbType = iota
+	JSON
+	SQL
+)
+
 func TestCreatingCart(t *testing.T) {
 	c := &cartgrpc.Cart{
 		Id:      uuid.New().String(),
 		BuyerId: uuid.New().String(),
 	}
+	repo, closeRepo := getRepo(t, TMP)
+	cartService := newCartGrpcServer(t, repo)
 
 	testCases := []struct {
 		name        string
@@ -52,8 +63,6 @@ func TestCreatingCart(t *testing.T) {
 			expectedErr: true,
 		},
 	}
-	repo, closeRepo, _ := getRepo(t, true)
-	cartService := newCartGrpcServer(t, repo)
 
 	//Run test scenarios
 	for _, tc := range testCases {
@@ -71,7 +80,7 @@ func TestCreatingCart(t *testing.T) {
 
 			//THEN
 			if testCase.expectedErr {
-				g.Expect(err).ToNot(BeNil(), "Result should be nil")
+				g.Expect(err).ToNot(BeNil(), "Error shouldn't be nil")
 			} else {
 				g.Expect(response.CartId).To(Equal(testCase.message))
 			}
@@ -82,6 +91,10 @@ func TestCreatingCart(t *testing.T) {
 
 func TestAddingCartProduct(t *testing.T) {
 	c := &cartgrpc.Cart{
+		Id:      uuid.New().String(),
+		BuyerId: uuid.New().String(),
+	}
+	oc := &cartgrpc.Cart{
 		Id:      uuid.New().String(),
 		BuyerId: uuid.New().String(),
 	}
@@ -98,6 +111,12 @@ func TestAddingCartProduct(t *testing.T) {
 		Units:     10,
 	}
 
+	repo, closeRepo := getRepo(t, TMP)
+	cartService := newCartGrpcServer(t, repo)
+	ctx := context.Background()
+	cartService.Create(ctx, &cartgrpc.CreateCartReq{Cart: c})
+	cartService.Create(ctx, &cartgrpc.CreateCartReq{Cart: oc})
+
 	testCases := []struct {
 		name        string
 		req         *cartgrpc.AddProductReq
@@ -113,6 +132,12 @@ func TestAddingCartProduct(t *testing.T) {
 		{
 			name:        "Same product",
 			req:         &cartgrpc.AddProductReq{CartId: c.Id, Product: p},
+			message:     p.Id,
+			expectedErr: false,
+		},
+		{
+			name:        "Same product to another cart",
+			req:         &cartgrpc.AddProductReq{CartId: oc.Id, Product: p},
 			message:     p.Id,
 			expectedErr: false,
 		},
@@ -143,10 +168,6 @@ func TestAddingCartProduct(t *testing.T) {
 			expectedErr: true,
 		},
 	}
-	repo, closeRepo, _ := getRepo(t, true)
-	cartService := newCartGrpcServer(t,repo)
-	ctx := context.Background()
-	cartService.Create(ctx, &cartgrpc.CreateCartReq{Cart: c})
 
 	//Run test scenarios
 	for _, tc := range testCases {
@@ -161,7 +182,7 @@ func TestAddingCartProduct(t *testing.T) {
 
 			//THEN
 			if testCase.expectedErr {
-				g.Expect(err).ToNot(BeNil(), "Result should be nil")
+				g.Expect(err).ToNot(BeNil(), "Error shouldn't be nil")
 			} else {
 				g.Expect(response.ProductId).To(Equal(testCase.message))
 			}
@@ -191,6 +212,18 @@ func TestListingCartProducts(t *testing.T) {
 		UnitPrice: 0.5,
 		Units:     10,
 	}
+
+	repo, closeRepo := getRepo(t, TMP)
+	cartService := newCartGrpcServer(t, repo)
+	ctx := context.Background()
+
+	//GIVEN
+	cartService.Create(ctx, &cartgrpc.CreateCartReq{Cart: c})
+	cartService.Add(ctx, &cartgrpc.AddProductReq{CartId: c.Id, Product: p})
+	cartService.Add(ctx, &cartgrpc.AddProductReq{CartId: c.Id, Product: p})
+	cartService.Add(ctx, &cartgrpc.AddProductReq{CartId: c.Id, Product: op})
+
+	cartService.Create(ctx, &cartgrpc.CreateCartReq{Cart: ec})
 
 	testCases := []struct {
 		name        string
@@ -227,18 +260,6 @@ func TestListingCartProducts(t *testing.T) {
 		},
 	}
 
-	repo, closeRepo, _ := getRepo(t, false)
-	cartService := newCartGrpcServer(t, repo)
-	ctx := context.Background()
-
-	//GIVEN
-	cartService.Create(ctx, &cartgrpc.CreateCartReq{Cart: c})
-	cartService.Add(ctx, &cartgrpc.AddProductReq{CartId: c.Id, Product: p})
-	cartService.Add(ctx, &cartgrpc.AddProductReq{CartId: c.Id, Product: p})
-	cartService.Add(ctx, &cartgrpc.AddProductReq{CartId: c.Id, Product: op})
-
-	cartService.Create(ctx, &cartgrpc.CreateCartReq{Cart: ec})
-
 	//Run test scenarios
 	for _, tc := range testCases {
 		testCase := tc
@@ -252,7 +273,7 @@ func TestListingCartProducts(t *testing.T) {
 
 			//THEN
 			if testCase.expectedErr {
-				g.Expect(err).ToNot(BeNil(), "Result should be nil")
+				g.Expect(err).ToNot(BeNil(), "Error shouldn't be nil")
 			} else {
 				g.Expect(len(response.Products)).To(Equal(testCase.message))
 			}
@@ -266,10 +287,11 @@ func newCartGrpcServer(t *testing.T, r cart.Repository) cartgrpc.CartServiceServ
 	return NewCartServiceServer(creating.NewCartCreator(r), adding.NewProductAdder(r), listing.NewProductLister(r))
 }
 
-func getRepo(t *testing.T, tmp bool) (cart.Repository, func(), error) {
+func getRepo(t *testing.T, dt dbType) (cart.Repository, func()) {
 	t.Helper()
-	if tmp == true {
-		store, closeFile, err := createTempFile(t, `[]`)
+	switch dt {
+	case TMP:
+		store, closeStore, err := createTempFile(t, `[]`)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -278,15 +300,32 @@ func getRepo(t *testing.T, tmp bool) (cart.Repository, func(), error) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		return repo, closeFile, err
-	}
+		return repo, closeStore
 
-	repo, closeStore, err := fs.CartStoreFromFile("cart_test.db.json")
-	if err != nil {
-		log.Fatal(err)
-	}
+	case JSON:
+		repo, closeStore, err := fs.CartStoreFromFile("cart_test.db.json")
+		if err != nil {
+			log.Fatal(err)
+		}
+		return repo, closeStore
 
-	return repo, closeStore, nil
+	case SQL:
+		dbURI := os.Getenv("DATABASE_URI")
+		conn, err := pgsql.NewConn(dbURI)
+		if err != nil {
+			log.Fatal(err)
+		}
+		repo := pgsql.NewCartRepository(conn)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return repo, func() {
+			conn.Close()
+		}
+	default:
+		log.Fatal("Unsupported DB Type")
+		return nil, nil
+	}
 }
 
 func createTempFile(t *testing.T, initialData string) (*os.File, func(), error) {
