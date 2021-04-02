@@ -2,7 +2,7 @@
 .git
 .DS_Store
 .build
-proto/*.pb.go
+#proto/*.pb.go
 *.db.json
 var/*
 

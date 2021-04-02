@@ -30,18 +30,18 @@ coverage:
 
 ##gRPC
 gplugins: ##grpc plugins
-	@go get google.golang.org/protobuf/cmd/protoc-gen-go \
-	@go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
+	go get google.golang.org/protobuf/cmd/protoc-gen-go
+	go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
 
 
 PROTO_PATH=proto
 PATH_TYPE=source_relative
 PROTO_OUT=.
 
-gproto: ##generate pb
+gproto: ##compile proto files
 	protoc --go_out=$(PROTO_OUT) --go_opt=paths=$(PATH_TYPE) \
         --go-grpc_out=require_unimplemented_servers=false:$(PROTO_OUT) --go-grpc_opt=paths=$(PATH_TYPE) \
-        $(PROTO_PATH)/cart.proto
+        $(PROTO_PATH)/*.proto
 
 cproto: ##clean pb
 	rm -f $(PROTO_PATH)/*.pb.go

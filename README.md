@@ -1,4 +1,4 @@
-# GO SHOPPING CART gRPC 
+# GO SHOPPING CART with gRPC 
 
 The Shopping Cart
 
@@ -13,6 +13,15 @@ In this gRPC micro service you can see basic features and patterns in Go:
 * Transactional Persistence
 * Middlewares
 
+## Model
+
+```
+
+  ┌───────────────────┐           ┌───────────────────┐
+  │       Cart        │<>─────────│     Product       │ 
+  └───────────────────┘           └───────────────────┘ 
+
+```
 ## How can I use it?
 
 ### Prerequisites
@@ -21,39 +30,50 @@ In this gRPC micro service you can see basic features and patterns in Go:
 ### Installing
 
 Download repository
-```
+```sh
 git clone https://github.com/amelendres/go-shopping-cart
 ```
 
 
 Build container
-```
+```sh
 make build
 ```
 
-Generate Proto
-```
+## Run tests
+
+Run the tests
+```sh
 make sh
-make gproto
 make test
 ```
 
-### HOW TO RUN
 
-### Prerequisites
-- BloomRPC
+## Try it!
+The shopping cart is running on `http://localhost:8050`
+
+Check the services with [BloomRPC](https://github.com/uw-labs/bloomrpc) ,
+importing the `proto/cart.proto`
+
+  <img src="https://github.com/uw-labs/bloomrpc/raw/master/resources/editor-preview.gif" />
 
 
 
-## TODO
 
-* Add end 2 end test scenarios
+Compile *proto files* on Go
+```sh
+make sh
+make gproto
+```
+
+
+
+### TODO
+
+* End 2 end test scenarios
   * Refactor Postgres Store to `SQLStore`
   * Add test ENV with sqlite
   * Refactor `handler_test` case runner
-* Refactor cart `Products` as `ProductLines` 
-  * Update database `product` to `product_lines`
-  * Add auto incremental `id`
 * Optimize `updateCartTx` in order to just save the changes
 * Add application context
 * Use internal packages

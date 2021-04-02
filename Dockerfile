@@ -4,7 +4,7 @@ ENV APP_NAME cart
 
 WORKDIR /go/src/${APP_NAME}
 
-RUN apk add --no-cache protoc make
+RUN apk add --no-cache protoc make gcc musl-dev
 
 COPY . .
 
