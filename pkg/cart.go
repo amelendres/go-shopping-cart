@@ -1,27 +1,59 @@
-package shopping
+package cart
 
 type UUID string
+
+type Products []Product
+
+type Repository interface {
+	Save(c Cart) error
+	Get(ID string) (*Cart, error)
+}
 
 type Cart struct {
 	ID, BuyerID UUID
 	Products    Products
 }
 
-func NewCart(id, buyerId UUID) *Cart {
-	return &Cart{id, buyerId, nil}
+func NewCart(ID, buyerID UUID) *Cart {
+	return &Cart{ID, buyerID, nil}
 }
 
-func (c *Cart) AddProduct(product Product) {
-	key, prod := c.Products.Find(product)
-
-	if prod != nil {
-		c.Products[key] = NewProduct(prod.ID, prod.Name, prod.Price, prod.Units+product.Units)
-	} else {
-		c.Products = append(c.Products, product)
+func (c *Cart) AddProduct(productID, name string, price float64, units int) {
+	_, err := c.GetProduct(productID)
+	if err != nil {
+		c.Products = append(c.Products, Product{productID, name, Price(price), Quantity(units)})
+		return
 	}
+
+	_ = c.IncProductQty(productID, units)
 }
 
 func (c *Cart) GetProducts() Products {
 	return c.Products
+}
+
+//GetProduct
+func (c *Cart) GetProduct(productID string) (*Product, error) {
+	for _, p := range c.Products {
+		if p.ID == productID {
+			return &p, nil
+		}
+	}
+	return nil, ErrProductNotFound(productID)
+}
+
+func (c *Cart) IncProductQty(productID string, qty int) error {
+	for i, p := range c.Products {
+		if p.ID == productID {
+			c.Products[i] = p.IncQty(Quantity(qty))
+			return nil
+		}
+	}
+	return ErrProductNotFound(productID)
+}
+
+//Value Objects
+func (u *UUID) String() string{
+	return string(*u)
 }
 

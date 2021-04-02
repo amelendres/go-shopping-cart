@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+option go_package = "github.com/amelendres/go-shopping-cart/proto";
+
+package proto;
+
+
+service CartService {
+    rpc Create(CreateCartReq) returns (CreateCartResp);
+    rpc Add(AddProductReq) returns (AddProductResp);
+    rpc List(ListCartReq) returns (ListCartResp);
+}
+
+message Product {
+    string id = 1;
+    string name = 2;
+    double unit_price = 3;
+    int32 units = 4;
+}
+
+message Cart {
+    string id = 1;
+    string buyer_id = 2;
+}
+
+message CreateCartReq {
+    Cart cart = 1;
+}
+
+message CreateCartResp {
+    string cart_id = 1;
+}
+
+message AddProductReq {
+    string cart_id = 1;
+    Product product = 2;
+}
+
+message AddProductResp {
+    string product_id = 1;
+}
+
+message ListCartReq {
+    string cart_id = 1;
+}
+
+message ListCartResp {
+    repeated Product products = 1;
+}

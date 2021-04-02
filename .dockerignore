@@ -3,4 +3,8 @@
 .gitignore
 .DS_Store
 .build
-cart.db.json
+*.db.json
+docker-compose.yaml
+Dockerfile
+var
+

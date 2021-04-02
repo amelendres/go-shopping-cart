@@ -1,4 +1,28 @@
-# GO SHOPPING CART API
+# GO SHOPPING CART with gRPC 
+
+The Shopping Cart
+
+In this gRPC micro service you can see basic features and patterns in Go:
+* DDD Cart Aggregate
+* Hexagonal Architecture
+* Command Query Segregation CQS  
+* SOLID
+* Domain - Unit tests (TDD)
+* Application test cases (BDD)
+* Repository Pattern
+* Transactional Persistence
+* Middlewares
+
+## Model
+
+```
+
+  ┌───────────────────┐           ┌───────────────────┐
+  │       Cart        │<>─────────│     Product       │ 
+  └───────────────────┘           └───────────────────┘ 
+
+```
+## How can I use it?
 
 ### Prerequisites
 - Docker
@@ -6,37 +30,61 @@
 ### Installing
 
 Download repository
-```
+```sh
 git clone https://github.com/amelendres/go-shopping-cart
 ```
 
 
 Build container
-```
+```sh
 make build
 ```
 
-### HOW TO RUN 
+## Run tests
 
-**ENDPOINTS**
-
-* Add a product to Cart
-```
-curl --location --request POST 'http://localhost:8050/carts/c50bf7b3-95d5-48fa-8b0d-691e3f40c1f9/products' \
---header 'Content-Type: application/json' \
---data-raw '{
-  "id": "4e45b227-6a79-44ee-8cf0-da21508a4f8a",
-  "name": "Dress",
-  "price": 299.50,
-  "units": 1
-}'
+Run the tests
+```sh
+make sh
+make test
 ```
 
-* Get products from cart
+
+## Try it!
+The shopping cart is running on `http://localhost:8050`
+
+Check the services with [BloomRPC](https://github.com/uw-labs/bloomrpc) ,
+importing the `proto/cart.proto`
+
+  <img src="https://github.com/uw-labs/bloomrpc/raw/master/resources/editor-preview.gif" />
+
+
+
+
+Compile *proto files* on Go
+```sh
+make sh
+make gproto
 ```
-curl --location --request GET 'http://localhost:8050/carts/c50bf7b3-95d5-48fa-8b0d-691e3f40c1f9/products' \
---header 'Content-Type: application/json' \
-```
+
+
+
+### TODO
+
+* End 2 end test scenarios
+  * Refactor Postgres Store to `SQLStore`
+  * Add test ENV with sqlite
+  * Refactor `handler_test` case runner
+* Optimize `updateCartTx` in order to just save the changes
+* Add application context
+* Use internal packages
+* Add DB Migrations
+* Add request validator
+* Add Error handler
+* Add quality code checker
+* Add domain events
+  * add event dispatcher
+    
+    
 
 
 ## Authors

@@ -1,4 +1,4 @@
-package shopping
+package cart
 
 import (
 	"testing"
@@ -8,62 +8,58 @@ type StubCartStore struct {
 	Carts []Cart
 }
 
-func (s *StubCartStore) Save(cart *Cart) error {
-	s.Carts = append(s.Carts, *cart)
+func NewStubCartStore() Repository {
+	return &StubCartStore{
+		[]Cart{},
+	}
+}
+
+
+func (s *StubCartStore) Save(c Cart) error {
+	s.Carts = append(s.Carts, c)
 	return nil
 }
 
-func (s *StubCartStore) Get(id string) (*Cart, error) {
-	if len(s.Carts) != 1 {
-		return nil, ErrUnknownCart
+func (s *StubCartStore) Get(ID string) (*Cart, error) {
+	if len(s.Carts) < 1 {
+		return nil, ErrCartNotFound(ID)
 	}
 	return &s.Carts[0], nil
 }
 
-func AssertProduct(t *testing.T, store *StubCartStore, product Product) {
+func AssertCartProduct(t *testing.T, c *Cart, p Product) {
 	t.Helper()
 
-	if len(store.Carts) != 1 {
-		t.Fatalf("got %d calls to AddProduct want %d", len(store.Carts), 1)
+	if len(c.Products) != 1 {
+		t.Fatalf("got %d calls to AddProduct want %d", len(c.Products), 1)
 	}
-	if store.Carts[0].Products[0] != product {
-		t.Errorf("did not store the correct product got %+v want %+v", store.Carts[0], product)
+
+	if c.Products[0] != p {
+		t.Errorf("did not cart the correct product got %+v want %+v", c.Products[0], p)
 	}
 }
 
-func AssertCartProduct(t *testing.T, cart *Cart, product Product) {
+func AssertCartProductQty(t *testing.T, c *Cart, productID string, qty Quantity) {
 	t.Helper()
 
-	if len(cart.Products) != 1 {
-		t.Fatalf("got %d calls to AddProduct want %d", len(cart.Products), 1)
+	p, err := c.GetProduct(productID)
+	if err != nil {
+		t.Fatalf("Product <%s> Not Found", productID)
 	}
 
-	if cart.Products[0] != product {
-		t.Errorf("did not cart the correct product got %+v want %+v", cart.Products[0], product)
+	if p.Units != qty {
+		t.Errorf("did not cart the correct product Units, got %d want %d", p.Units, qty)
 	}
 }
 
-func AssertCartProductQty(t *testing.T, cart *Cart, product Product, qty Quantity) {
+func AssertCartProductLines(t *testing.T, c *Cart, qty int) {
 	t.Helper()
-
-	_, prod := cart.Products.Find(product)
-
-	if nil == prod {
-		t.Fatalf("Proudct Not Found, got %q  want %d", product.Name, qty)
-	}
-
-	if prod.Units != qty {
-		t.Errorf("did not cart the correct product Units, got %d want %d", prod.Units, qty)
-	}
-}
-
-func AssertCartProductLines(t *testing.T, cart *Cart, qty int) {
-	t.Helper()
-	lines := len(cart.Products)
+	lines := len(c.Products)
 	if lines != qty{
 		t.Errorf("did not cart the correct product lines, got %q want %q", lines, qty)
 	}
 }
+
 
 
 //BASIC ASSERTS
