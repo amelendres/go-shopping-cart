@@ -10,14 +10,14 @@ type Product struct {
 	Units    Quantity
 }
 
-func NewProduct(ID, name string, price Price, units Quantity) Product{
-	return Product{ID, name, price, units}
+func NewProduct(ID, name string, price Price, units Quantity) *Product{
+	return &Product{ID, name, price, units}
 }
 
 func (p *Product) Equal(o Product) bool {
-	return p.ID == o.ID && p.Name == o.Name && p.Price == o.Price
+	return Product{p.ID, p.Name, p.Price, 0} == Product{o.ID, o.Name, o.Price, 0 }
 }
 
-func (p *Product) IncQty(qty Quantity) Product {
+func (p *Product) IncQty(qty Quantity) *Product {
 	return NewProduct(p.ID, p.Name, p.Price, p.Units + qty)
 }

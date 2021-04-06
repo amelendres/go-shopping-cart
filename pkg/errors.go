@@ -16,3 +16,7 @@ func ErrCartNotFound(id string) error {
 func ErrCartAlreadyExists(id string) error {
 	return errors.New(fmt.Sprintf("Cart <%s> already exists", id))
 }
+
+func ErrAddingOtherProductWithSameId(id string) error {
+	return errors.New(fmt.Sprintf("Error adding product ID <%s> with different name or price", id))
+}

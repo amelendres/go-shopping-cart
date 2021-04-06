@@ -70,6 +70,9 @@ make gproto
 
 ### TODO
 
+* Application service with req
+* VO validations, price, qty
+* interceptors naming
 * End 2 end test scenarios
   * Refactor Postgres Store to `SQLStore`
   * Add test ENV with sqlite

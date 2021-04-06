@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"database/sql"
 	cart "github.com/amelendres/go-shopping-cart/pkg"
 	"github.com/amelendres/go-shopping-cart/pkg/adding"
 	"github.com/amelendres/go-shopping-cart/pkg/creating"
@@ -14,17 +15,24 @@ import (
 	"os"
 	"testing"
 
+	_ "github.com/mattn/go-sqlite3"
 	. "github.com/onsi/gomega"
 
 	cartgrpc "github.com/amelendres/go-shopping-cart/proto"
 )
 
 type dbType int
-
 const (
 	TMP dbType = iota
 	JSON
 	SQL
+)
+
+type serviceType int
+const (
+	CREATE_CART serviceType = iota
+	ADD_PRODUCT
+	LIST_CART_PRODUCTS
 )
 
 func TestCreatingCart(t *testing.T) {
@@ -32,7 +40,7 @@ func TestCreatingCart(t *testing.T) {
 		Id:      uuid.New().String(),
 		BuyerId: uuid.New().String(),
 	}
-	repo, closeRepo := getRepo(t, TMP)
+	repo, closeRepo := getRepo(t, SQL)
 	cartService := newCartGrpcServer(t, repo)
 
 	testCases := []struct {
@@ -65,8 +73,7 @@ func TestCreatingCart(t *testing.T) {
 	}
 
 	//Run test scenarios
-	for _, tc := range testCases {
-		testCase := tc
+	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			g := NewGomegaWithT(t)
@@ -75,7 +82,6 @@ func TestCreatingCart(t *testing.T) {
 
 			//WHEN
 			response, err := cartService.Create(ctx, testCase.req)
-
 			t.Log("Got : ", response)
 
 			//THEN
@@ -86,7 +92,9 @@ func TestCreatingCart(t *testing.T) {
 			}
 		})
 	}
-	closeRepo()
+	t.Cleanup(func() {
+		closeRepo()
+	})
 }
 
 func TestAddingCartProduct(t *testing.T) {
@@ -104,6 +112,13 @@ func TestAddingCartProduct(t *testing.T) {
 		UnitPrice: 7.5,
 		Units:     1,
 	}
+	p1 := &cartgrpc.Product{
+		Id:        p.Id,
+		Name:      p.Name,
+		UnitPrice: 1,
+		Units:     1,
+	}
+
 	op := &cartgrpc.Product{
 		Id:        uuid.New().String(),
 		Name:      "Socks",
@@ -111,7 +126,7 @@ func TestAddingCartProduct(t *testing.T) {
 		Units:     10,
 	}
 
-	repo, closeRepo := getRepo(t, TMP)
+	repo, closeRepo := getRepo(t, SQL)
 	cartService := newCartGrpcServer(t, repo)
 	ctx := context.Background()
 	cartService.Create(ctx, &cartgrpc.CreateCartReq{Cart: c})
@@ -134,6 +149,11 @@ func TestAddingCartProduct(t *testing.T) {
 			req:         &cartgrpc.AddProductReq{CartId: c.Id, Product: p},
 			message:     p.Id,
 			expectedErr: false,
+		},
+		{
+			name:        "Same product with different price",
+			req:         &cartgrpc.AddProductReq{CartId: c.Id, Product: p1},
+			expectedErr: true,
 		},
 		{
 			name:        "Same product to another cart",
@@ -170,8 +190,7 @@ func TestAddingCartProduct(t *testing.T) {
 	}
 
 	//Run test scenarios
-	for _, tc := range testCases {
-		testCase := tc
+	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			g := NewGomegaWithT(t)
@@ -188,7 +207,11 @@ func TestAddingCartProduct(t *testing.T) {
 			}
 		})
 	}
-	closeRepo()
+
+	t.Cleanup(func() {
+		closeRepo()
+	})
+
 }
 
 func TestListingCartProducts(t *testing.T) {
@@ -213,7 +236,7 @@ func TestListingCartProducts(t *testing.T) {
 		Units:     10,
 	}
 
-	repo, closeRepo := getRepo(t, TMP)
+	repo, closeRepo := getRepo(t, SQL)
 	cartService := newCartGrpcServer(t, repo)
 	ctx := context.Background()
 
@@ -261,8 +284,9 @@ func TestListingCartProducts(t *testing.T) {
 	}
 
 	//Run test scenarios
-	for _, tc := range testCases {
-		testCase := tc
+	for _, testCase := range testCases {
+	//for _, tc := range testCases {
+		//testCase := tc
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			g := NewGomegaWithT(t)
@@ -279,7 +303,16 @@ func TestListingCartProducts(t *testing.T) {
 			}
 		})
 	}
-	closeRepo()
+	t.Cleanup(func() {
+		closeRepo()
+	})
+}
+
+type TestCase struct {
+	name        string
+	req         *interface{}
+	message     int
+	expectedErr bool
 }
 
 func newCartGrpcServer(t *testing.T, r cart.Repository) cartgrpc.CartServiceServer {
@@ -303,18 +336,20 @@ func getRepo(t *testing.T, dt dbType) (cart.Repository, func()) {
 		return repo, closeStore
 
 	case JSON:
-		repo, closeStore, err := fs.CartStoreFromFile("cart_test.db.json")
+		//repo, closeStore, err := fs.CartStoreFromFile("cart_test.db.json")
+		repo, _, err := fs.CartStoreFromFile("cart_test.db.json")
 		if err != nil {
 			log.Fatal(err)
 		}
-		return repo, closeStore
+		//return repo, closeStore
+		return repo, func() {}
 
 	case SQL:
-		dbURI := os.Getenv("DATABASE_URI")
-		conn, err := pgsql.NewConn(dbURI)
+		conn, err := NewTestConn(t)
 		if err != nil {
 			log.Fatal(err)
 		}
+		resetDB(t, conn)
 		repo := pgsql.NewCartRepository(conn)
 		if err != nil {
 			log.Fatal(err)
@@ -347,4 +382,42 @@ func createTempFile(t *testing.T, initialData string) (*os.File, func(), error) 
 	}
 
 	return tf, removeFile, nil
+}
+
+func resetDB(t *testing.T, db *sql.DB) error {
+	t.Helper()
+
+	q := `	DROP TABLE IF EXISTS product_line;
+			DROP TABLE IF EXISTS cart;
+
+			CREATE TABLE IF NOT EXISTS cart
+			(
+				id       UUID NOT NULL,
+				buyer_id UUID NOT NULL,
+				CONSTRAINT pk_cart PRIMARY KEY (id)
+			);
+			
+			CREATE TABLE IF NOT EXISTS product_line
+			(
+				id      INT auto_increment,
+				product_id UUID  NOT NULL,
+				cart_id UUID  NOT NULL,
+				name    text  NOT NULL,
+				price   FLOAT NOT NULL,
+				qty     INT   NOT NULL,
+				CONSTRAINT pk_product_line PRIMARY KEY (id),
+				CONSTRAINT fk_product_cart FOREIGN KEY (cart_id) REFERENCES cart (id)
+			);
+			`
+	_, err := db.Exec(q)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func NewTestConn(t *testing.T) (*sql.DB, error) {
+	t.Helper()
+
+	return sql.Open("sqlite3", "db_test.sqlite")
 }

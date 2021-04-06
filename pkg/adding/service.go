@@ -1,6 +1,8 @@
 package adding
 
-import cart "github.com/amelendres/go-shopping-cart/pkg"
+import (
+	cart "github.com/amelendres/go-shopping-cart/pkg"
+)
 
 type ProductAdder interface {
 	AddCartProduct(cartID, productID, name string, price float64, units int) error
@@ -16,8 +18,11 @@ func (s service) AddCartProduct(cartID, productID, name string, price float64, u
 		return err
 	}
 
-	c.AddProduct(productID, name, price, units)
-
+	err = c.AddProduct(productID, name, price, units)
+	if err != nil {
+		return err
+	}
+	//log.Printf("cart: %+v", c)
 	return s.repository.Save(*c)
 }
 
