@@ -19,7 +19,7 @@ make sh:
 test: ## run tests
 	@go test ./...
 	#go test ./pkg -run TestCartAddProduct -v
-	#go test ./pkg/server  -v
+	#go test ./pkg/server/grpc  -v
 
 coverage:
 	mkdir -p var/test_results

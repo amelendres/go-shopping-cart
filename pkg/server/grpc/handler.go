@@ -38,7 +38,7 @@ func (s cartHandler) Create(ctx context.Context, req *cartgrpc.CreateCartReq) (*
 	if err != nil {
 		return nil, err
 	}
-	return &cartgrpc.CreateCartResp{CartId: req.Cart.Id}, nil
+	return &cartgrpc.CreateCartResp{}, nil
 }
 
 func (s cartHandler) Add(ctx context.Context, req *cartgrpc.AddProductReq) (*cartgrpc.AddProductResp, error) {
@@ -61,7 +61,7 @@ func (s cartHandler) Add(ctx context.Context, req *cartgrpc.AddProductReq) (*car
 		//log.Printf("error: %+v", err)
 		return nil, err
 	}
-	return &cartgrpc.AddProductResp{ProductId: req.Product.Id}, nil
+	return &cartgrpc.AddProductResp{}, nil
 }
 
 func (s cartHandler) List(ctx context.Context, req *cartgrpc.ListCartReq) (*cartgrpc.ListCartResp, error) {

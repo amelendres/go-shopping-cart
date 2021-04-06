@@ -52,7 +52,7 @@ func TestCreatingCart(t *testing.T) {
 		{
 			name:        "A new valid cart",
 			req:         &cartgrpc.CreateCartReq{Cart: c},
-			message:     c.Id,
+			message:     "",
 			expectedErr: false,
 		},
 		{
@@ -88,7 +88,7 @@ func TestCreatingCart(t *testing.T) {
 			if testCase.expectedErr {
 				g.Expect(err).ToNot(BeNil(), "Error shouldn't be nil")
 			} else {
-				g.Expect(response.CartId).To(Equal(testCase.message))
+				g.Expect(response).To(Equal(testCase.message))
 			}
 		})
 	}
@@ -141,13 +141,13 @@ func TestAddingCartProduct(t *testing.T) {
 		{
 			name:        "A new valid product",
 			req:         &cartgrpc.AddProductReq{CartId: c.Id, Product: p},
-			message:     p.Id,
+			message:     "",
 			expectedErr: false,
 		},
 		{
 			name:        "Same product",
 			req:         &cartgrpc.AddProductReq{CartId: c.Id, Product: p},
-			message:     p.Id,
+			message:     "",
 			expectedErr: false,
 		},
 		{
@@ -158,13 +158,13 @@ func TestAddingCartProduct(t *testing.T) {
 		{
 			name:        "Same product to another cart",
 			req:         &cartgrpc.AddProductReq{CartId: oc.Id, Product: p},
-			message:     p.Id,
+			message:     "",
 			expectedErr: false,
 		},
 		{
 			name:        "Another valid product",
 			req:         &cartgrpc.AddProductReq{CartId: c.Id, Product: op},
-			message:     op.Id,
+			message:     "",
 			expectedErr: false,
 		},
 		{
@@ -203,7 +203,7 @@ func TestAddingCartProduct(t *testing.T) {
 			if testCase.expectedErr {
 				g.Expect(err).ToNot(BeNil(), "Error shouldn't be nil")
 			} else {
-				g.Expect(response.ProductId).To(Equal(testCase.message))
+				g.Expect(response).To(Equal(testCase.message))
 			}
 		})
 	}
