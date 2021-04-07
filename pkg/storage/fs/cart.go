@@ -46,13 +46,13 @@ func (f *CartRepository) Get(ID string) (*cart.Cart, error) {
 }
 
 func (f *CartRepository) Save(c cart.Cart) error {
-	curr, err := f.find(string(c.ID))
+	curr, err := f.find(c.ID.String())
 	if err != nil {
 		f.carts = append(f.carts, c)
-		return nil
+	}else{
+		*curr = c
 	}
 
-	*curr = c
 	return f.database.Encode(f.carts)
 }
 
@@ -100,6 +100,15 @@ func (f *CartRepository) find(ID string) (*cart.Cart, error) {
 		}
 	}
 	return nil, errors.New(fmt.Sprintf("Cart <%s> not found", ID))
+}
+
+func (f *CartRepository) key(ID string) (int, error) {
+	for i, c := range f.carts {
+		if string(c.ID) == ID {
+			return i, nil
+		}
+	}
+	return -1, errors.New(fmt.Sprintf("Cart <%s> not found", ID))
 }
 
 func newCartsFromJSON(rdr io.Reader) ([]cart.Cart, error) {

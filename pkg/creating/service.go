@@ -13,15 +13,11 @@ type service struct {
 func (s service) Create(cartID, buyerID string) error {
 	c, _ := s.repository.Get(cartID)
 	if c != nil {
-		return cart.ErrCartAlreadyExists(string(c.ID))
+		return cart.ErrCartAlreadyExists(c.ID.String())
 	}
 
 	w := cart.NewCart(cart.UUID(cartID), cart.UUID(buyerID))
-	err := s.repository.Save(*w)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.repository.Save(*w)
 }
 
 func NewCartCreator(repository cart.Repository) CartCreator {

@@ -2,13 +2,12 @@ package grpc
 
 import (
 	"context"
-	"golang.org/x/xerrors"
-
 	cart "github.com/amelendres/go-shopping-cart/pkg"
 	"github.com/amelendres/go-shopping-cart/pkg/adding"
 	"github.com/amelendres/go-shopping-cart/pkg/creating"
 	"github.com/amelendres/go-shopping-cart/pkg/listing"
 	cartgrpc "github.com/amelendres/go-shopping-cart/proto"
+	"github.com/pkg/errors"
 )
 
 type cartHandler struct {
@@ -28,11 +27,11 @@ func NewCartServiceServer(
 
 func (s cartHandler) Create(ctx context.Context, req *cartgrpc.CreateCartReq) (*cartgrpc.CreateCartResp, error) {
 	if req == nil {
-		return nil, xerrors.Errorf("request must not be nil")
+		return nil, errors.Errorf("request must not be nil")
 	}
 
 	if req.Cart == nil {
-		return nil, xerrors.Errorf("Cart but not be empty in the request")
+		return nil, errors.Errorf("Cart but not be empty in the request")
 	}
 
 	err := s.cartCreator.Create(req.Cart.Id, req.Cart.BuyerId)
@@ -44,11 +43,11 @@ func (s cartHandler) Create(ctx context.Context, req *cartgrpc.CreateCartReq) (*
 
 func (s cartHandler) Add(ctx context.Context, req *cartgrpc.AddProductReq) (*cartgrpc.AddProductResp, error) {
 	if req == nil {
-		return nil, xerrors.Errorf("request must not be nil")
+		return nil, errors.Errorf("request must not be nil")
 	}
 
 	if req.Product == nil {
-		return nil, xerrors.Errorf("Product but not be empty in the request")
+		return nil, errors.Errorf("Product but not be empty in the request")
 	}
 
 	err := s.productAdder.AddCartProduct(
@@ -59,6 +58,7 @@ func (s cartHandler) Add(ctx context.Context, req *cartgrpc.AddProductReq) (*car
 		int(req.Product.Units),
 	)
 	if err != nil {
+		//log.Printf("error: %+v", err)
 		return nil, err
 	}
 	return &cartgrpc.AddProductResp{ProductId: req.Product.Id}, nil
@@ -66,7 +66,7 @@ func (s cartHandler) Add(ctx context.Context, req *cartgrpc.AddProductReq) (*car
 
 func (s cartHandler) List(ctx context.Context, req *cartgrpc.ListCartReq) (*cartgrpc.ListCartResp, error) {
 	if req == nil {
-		return nil, xerrors.Errorf("request must not be nil")
+		return nil, errors.Errorf("request must not be nil")
 	}
 
 	products, err := s.productLister.ListProducts(req.CartId)
