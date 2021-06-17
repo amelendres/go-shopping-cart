@@ -1,25 +1,32 @@
 package creating
 
-import cart "github.com/amelendres/go-shopping-cart/pkg"
+import (
+	. "github.com/amelendres/go-shopping-cart/pkg"
+)
 
 type CartCreator interface {
-	Create(cartID, buyerID string) error
+	Create(req CreateCartReq) error
 }
 
 type service struct {
-	repository cart.Repository
+	repository Repository
 }
 
-func (s service) Create(cartID, buyerID string) error {
-	c, _ := s.repository.Get(cartID)
+type CreateCartReq struct {
+	CartID  string `json:"cart_id"`
+	BuyerID string `json:"buyer_id"`
+}
+
+func (s service) Create(req CreateCartReq) error {
+	c, _ := s.repository.Get(req.CartID)
 	if c != nil {
-		return cart.ErrCartAlreadyExists(c.ID.String())
+		return ErrCartAlreadyExists(c.ID())
 	}
 
-	w := cart.NewCart(cart.UUID(cartID), cart.UUID(buyerID))
+	w := NewCart(UUID(req.CartID), UUID(req.BuyerID))
 	return s.repository.Save(*w)
 }
 
-func NewCartCreator(repository cart.Repository) CartCreator {
+func NewCartCreator(repository Repository) CartCreator {
 	return &service{repository: repository}
 }

@@ -1,13 +1,14 @@
-package fs
+package fs_test
 
 import (
-	cart "github.com/amelendres/go-shopping-cart/pkg"
+	"github.com/amelendres/go-shopping-cart/pkg/storage/fs"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"testing"
 )
 
-func CreateTempFile(t *testing.T, initialData string) (*os.File, func()){
+func CreateTempFile(t *testing.T, initialData string) (*os.File, func()) {
 	t.Helper()
 
 	tmpfile, err := ioutil.TempFile("", "db")
@@ -31,8 +32,8 @@ func TestFileSystemStore(t *testing.T) {
 		db, cleanDB := CreateTempFile(t, "")
 		defer cleanDB()
 
-		_, err := NewCartStore(db)
+		_, err := fs.NewCartStore(db)
 
-		cart.AssertNoError(t, err)
+		assert.NoError(t, err)
 	})
 }

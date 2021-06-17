@@ -1,6 +1,7 @@
-package fs
+package fs_test
 
 import (
+	"github.com/amelendres/go-shopping-cart/pkg/storage/fs"
 	"io/ioutil"
 	"testing"
 )
@@ -9,7 +10,8 @@ func TestTape_Write(t *testing.T) {
 	file, clean := CreateTempFile(t, "12345")
 	defer clean()
 
-	tape := &tape{file}
+	//tape := &fs.tape{file}
+	tape := fs.NewTape(file)
 
 	tape.Write([]byte("abc"))
 

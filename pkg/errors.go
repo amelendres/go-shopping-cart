@@ -5,18 +5,18 @@ import (
 	"fmt"
 )
 
-func ErrProductNotFound(id string) error {
-	return errors.New(fmt.Sprintf("Product <%s> not found", id))
+func ErrProductNotFound(ID UUID) error {
+	return errors.New(fmt.Sprintf("Product <%s> not found", ID))
 }
 
-func ErrCartNotFound(id string) error {
-	return errors.New(fmt.Sprintf("Cart <%s> not found", id))
+func ErrCartNotFound(ID string) error {
+	return errors.New(fmt.Sprintf("Cart <%s> not found", ID))
 }
 
-func ErrCartAlreadyExists(id string) error {
-	return errors.New(fmt.Sprintf("Cart <%s> already exists", id))
+func ErrCartAlreadyExists(ID UUID) error {
+	return errors.New(fmt.Sprintf("Cart <%s> already exists", ID.String()))
 }
 
-func ErrAddingOtherProductWithSameId(id string) error {
-	return errors.New(fmt.Sprintf("Error adding product ID <%s> with different name or price", id))
+func ErrAddingOtherProductWithSameId(ID UUID) error {
+	return errors.New(fmt.Sprintf("Error adding product id <%s> with different name or price", ID))
 }

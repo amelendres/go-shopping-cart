@@ -70,22 +70,20 @@ make gproto
 
 ### TODO
 
-* Application service with req
-* VO validations, price, qty
-* interceptors naming
-* End 2 end test scenarios
-  * Refactor Postgres Store to `SQLStore`
-  * Add test ENV with sqlite
-  * Refactor `handler_test` case runner
+* Refactor Application services by ctx  
+* Refactor CartServer with wire DI
+* Refactor SRP CartServer Handlers
+* Refactor product units to qty.  
+* Add http request validation   
+* Refactor Postgres Store to `SQLStore`
+* Refactor `handler_test` case runner
 * Optimize `updateCartTx` in order to just save the changes
-* Add application context
-* Use internal packages
-* Add DB Migrations
-* Add request validator
-* Add Error handler
+* Add DB Migrations ... (goland migrate)
+* Add Error response handler
 * Add quality code checker
 * Add domain events
-  * add event dispatcher
+* add event publisher
+* add message publisher
     
     
 

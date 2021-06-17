@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	cart "github.com/amelendres/go-shopping-cart/pkg"
 	"github.com/amelendres/go-shopping-cart/pkg/adding"
 	"github.com/amelendres/go-shopping-cart/pkg/creating"
 	"github.com/amelendres/go-shopping-cart/pkg/listing"
@@ -34,7 +33,7 @@ func (s cartHandler) Create(ctx context.Context, req *cartgrpc.CreateCartReq) (*
 		return nil, errors.Errorf("Cart but not be empty in the request")
 	}
 
-	err := s.cartCreator.Create(req.Cart.Id, req.Cart.BuyerId)
+	err := s.cartCreator.Create(creating.CreateCartReq{req.Cart.Id, req.Cart.BuyerId})
 	if err != nil {
 		return nil, err
 	}
@@ -50,12 +49,14 @@ func (s cartHandler) Add(ctx context.Context, req *cartgrpc.AddProductReq) (*car
 		return nil, errors.Errorf("Product but not be empty in the request")
 	}
 
-	err := s.productAdder.AddCartProduct(
-		req.CartId,
-		req.Product.Id,
-		req.Product.Name,
-		req.Product.UnitPrice,
-		int(req.Product.Units),
+	err := s.productAdder.Add(
+		adding.AddProductReq{
+			req.CartId,
+			req.Product.Id,
+			req.Product.Name,
+			req.Product.UnitPrice,
+			int(req.Product.Units),
+		},
 	)
 	if err != nil {
 		//log.Printf("error: %+v", err)
@@ -76,12 +77,12 @@ func (s cartHandler) List(ctx context.Context, req *cartgrpc.ListCartReq) (*cart
 	return &cartgrpc.ListCartResp{Products: mapSliceOfProducts(products)}, nil
 }
 
-func mapSliceOfProducts(products []cart.Product) (grpcProducts []*cartgrpc.Product) {
+func mapSliceOfProducts(products []listing.ProductResponse) (grpcProducts []*cartgrpc.Product) {
 	for _, p := range products {
 		grpcProducts = append(grpcProducts, &cartgrpc.Product{
 			Id:        p.ID,
 			Name:      p.Name,
-			UnitPrice: float64(p.Price),
+			UnitPrice: p.Price,
 			Units:     int32(p.Units),
 		})
 	}
