@@ -10,36 +10,44 @@ type Repository interface {
 }
 
 type Cart struct {
-	ID, BuyerID UUID
-	Products    Products
+	id, buyerID UUID
+	products    Products
 }
 
 func NewCart(ID, buyerID UUID) *Cart {
 	return &Cart{ID, buyerID, nil}
 }
 
-func (c *Cart) AddProduct(productID, name string, price float64, units int) error {
-	prod := NewProduct(productID, name, Price(price), Quantity(units))
+func (c *Cart) ID() UUID {
+	return c.id
+}
+
+func (c *Cart) BuyerID() UUID {
+	return c.id
+}
+
+func (c *Cart) AddProduct(productID UUID, name string, price Price, units Quantity) error {
+	prod := NewProduct(productID, name, price, units)
 	p := c.find(productID)
 	if p == nil {
-		c.Products = append(c.Products, *prod)
+		c.products = append(c.products, *prod)
 		return nil
 	}
 
 	if p.Equal(*prod) {
-		*p = *p.IncQty(prod.Units)
+		*p = *p.IncQty(prod.Qty())
 		return nil
 	}
 
 	return ErrAddingOtherProductWithSameId(productID)
 }
 
-func (c *Cart) GetProducts() Products {
-	return c.Products
+func (c *Cart) Products() Products {
+	return c.products
 }
 
-//GetProduct
-func (c *Cart) GetProduct(productID string) (*Product, error) {
+//Product
+func (c *Cart) Product(productID UUID) (*Product, error) {
 	p := c.find(productID)
 	if p != nil {
 		p1 := *p
@@ -48,26 +56,26 @@ func (c *Cart) GetProduct(productID string) (*Product, error) {
 	return nil, ErrProductNotFound(productID)
 }
 
-func (c *Cart) IncProductQty(productID string, qty int) error {
+//func (c *Cart) IncProductQty(productID UUID, qty Quantity) error {
+//
+//	p := c.find(productID)
+//	if p != nil {
+//		*p = *p.IncQty(qty)
+//		return nil
+//	}
+//	return ErrProductNotFound(productID)
+//}
 
-	p := c.find(productID)
-	if p != nil {
-		*p = *p.IncQty(Quantity(qty))
-		return nil
-	}
-	return ErrProductNotFound(productID)
-}
-
-func (c *Cart) find(productID string) *Product {
-	for i, p := range c.Products {
-		if p.ID == productID {
-			return &c.Products[i]
+func (c *Cart) find(productID UUID) *Product {
+	for i, p := range c.products {
+		if p.id == productID {
+			return &c.products[i]
 		}
 	}
 	return nil
 }
 
 //Value Objects
-func (u *UUID) String() string {
-	return string(*u)
+func (u UUID) String() string {
+	return string(u)
 }

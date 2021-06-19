@@ -15,7 +15,6 @@ const (
 	ServerProtocol = "tcp"
 	ServerHost     = "localhost"
 	ServerPort     = "3333"
-	dbFileName     = "cart.db.json"
 )
 
 func main() {

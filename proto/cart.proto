@@ -28,7 +28,6 @@ message CreateCartReq {
 }
 
 message CreateCartResp {
-    string cart_id = 1;
 }
 
 message AddProductReq {
@@ -37,7 +36,6 @@ message AddProductReq {
 }
 
 message AddProductResp {
-    string product_id = 1;
 }
 
 message ListCartReq {
